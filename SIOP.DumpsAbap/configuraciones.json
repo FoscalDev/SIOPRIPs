@@ -1,0 +1,36 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=DESKTOP-S6CO4QI\\SQLEXPRESS;Database=WhatsApi;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Warning",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Seq",
+        "Args": {
+          "serverUrl": "http://172.17.4.33:5341"
+        }
+      },
+      {
+        "Name": "Console"
+      }
+    ]
+  },
+  "api": {
+    "url": "https://localhost:7102/",
+    "user": "foscal",
+    "password": "foscal"
+  }
+}

@@ -1,0 +1,22 @@
+# echo 'EWc5SU4@Ojh3zeb42kI&u0st@HTJRgQq3Fo2Nskf@@brvZH^FCK1Vc*HXhazdIyaK#KLM$HhvZkVEsi5lkPc1ow$U05u*M2%0E2' | docker login -u foscal --password-stdin
+# docker-compose -f foscal.siop.interno.production.yml up -d
+
+version: '3.8'
+
+services:
+  siop:
+    image: foscal/siop-inte:latest
+    container_name: siopinte-api
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 3G
+        reservations:
+          cpus: '0.25'
+          memory: 1G
+    ports:
+      - "61850:23010"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: unless-stopped

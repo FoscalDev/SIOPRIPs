@@ -61,5 +61,19 @@ namespace SIOP.Controllers.EndPointDocker
                 return BadRequest(ex.Message);
             }
         }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("Version")]
+        public async Task<ActionResult<string>> Version()
+        {
+
+                return await _Services.Version();
+
+        }
+
+ 
+
     }
 }

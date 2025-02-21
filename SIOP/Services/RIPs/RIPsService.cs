@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.NetworkInformation;
+using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SIOP.Model.DTO.DockerRips;
@@ -193,5 +194,36 @@ namespace SIOP.Services.DockerRips
                 throw new Exception(JsonConvert.SerializeObject(Result));
             }
         }
+
+
+        public async Task<string> Version() {
+
+            try
+            {
+                string fullUrl = $"{Config.GetValue<string>("EndPointDocker:Url")}api/TestApi/Index";
+
+                HttpClientHandler clientHandler = new();
+                clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+
+                HttpRequestMessage Request = new(HttpMethod.Get, fullUrl);
+
+                HttpClient Client = new(clientHandler);
+                HttpResponseMessage Response = await Client.SendAsync(Request);
+
+                var Result = await Response.Content.ReadAsStringAsync();
+
+                return Result;
+            }
+            catch (Exception ex)
+            {
+
+                return ($"sin respuesta error: { ex.Message } exception: {ex.InnerException.Message}");
+            }
+          
+     
+
+        }
+
+    
     }
 }

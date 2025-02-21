@@ -49,6 +49,7 @@ namespace SIOP.Services.DockerRips
             }
             else
             {
+                Serilog.Log.Error($"(SIOP-RIPS) Error autenticación sispro usuario {Param.persona} {Result!.errors[0]}");
                 throw new Exception(Result!.errors[0]);
             }
         }

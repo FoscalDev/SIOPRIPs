@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using Serilog;
 using SIOP.FEVRIPS;
 using SIOP.Services.DockerRips;
@@ -44,6 +45,13 @@ var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 builder.Services.AddScoped<DockerRips>();
 builder.Services.AddScoped<ServicesFEV>();
 builder.Services.AddScoped<EmailServices>();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 2147483647; // 2GB
+});
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
@@ -52,6 +60,11 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI();
 }
 
+// Middleware para capturar métricas HTTP
+app.UseHttpMetrics();
+
+// Endpoint para Prometheus
+app.MapMetrics();
 app.UseCors(misReglasCors);
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SIOP.Model.DTO.DockerRips;
 using SIOP.Model.DTO.RIPs;
 using SIOP.Services.DockerRips;
@@ -73,7 +74,28 @@ namespace SIOP.Controllers.EndPointDocker
 
         }
 
- 
+        [HttpPost("format")]
+        public IActionResult FormatJson([FromBody] string jsonInput)
+        {
+            try
+            {
+                // Parsear el JSON para asegurarse de que es válido
+                var parsedJson = JsonConvert.DeserializeObject(jsonInput);
+
+                // Formatear el JSON con indentación
+                var formattedJson = JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
+
+                // Devolver el JSON formateado
+                return Ok(formattedJson);
+            }
+            catch (JsonException ex)
+            {
+                // Manejar errores de JSON inválido
+                return BadRequest($"JSON inválido: {ex.Message}");
+            }
+        }
+
+
 
     }
 }

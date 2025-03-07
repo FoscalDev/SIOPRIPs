@@ -18,11 +18,13 @@ namespace SIOP.Services.DockerRips
             Config = config;
             var clientHandler = new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true,
+                MaxRequestContentBufferSize = 2147483647  // 50 MB
             };
 
             _httpclient = new HttpClient(clientHandler)
             {
+
                 Timeout = TimeSpan.FromMinutes(30) // Configurar timeout si es necesario
             };
         }
@@ -160,8 +162,11 @@ namespace SIOP.Services.DockerRips
             Request.Content = Content;
 
             _httpclient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-            HttpResponseMessage Response = await _httpclient.SendAsync(Request);
+            // HttpResponseMessage Response = await _httpclient.SendAsync(Request);
 
+            HttpResponseMessage Response = await _httpclient.SendAsync(Request, HttpCompletionOption.ResponseHeadersRead);
+            _httpclient.DefaultRequestHeaders.ExpectContinue = false;
+            var respuesta = await Response.Content.ReadAsStringAsync();
             RespuestaConsultarCUVDTO Result = await Response.Content.ReadFromJsonAsync<RespuestaConsultarCUVDTO>();
             if (Response.IsSuccessStatusCode)
             {

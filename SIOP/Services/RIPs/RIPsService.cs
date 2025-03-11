@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using Serilog;
 using SIOP.Model.DTO.DockerRips;
 using SIOP.Model.DTO.RIPs;
 
@@ -117,6 +118,8 @@ namespace SIOP.Services.DockerRips
                 string errorContent = await Response.Content.ReadAsStringAsync();
                 //throw new Exception($"Error en la solicitud: {Response.StatusCode}. Detalles: {errorContent}");
                 // throw new Exception(JsonConvert.SerializeObject(Result));
+
+                Log.Error($"Error respuesta apidocker envio de rips {errorContent}");
                 throw new Exception(errorContent);
             }
         }

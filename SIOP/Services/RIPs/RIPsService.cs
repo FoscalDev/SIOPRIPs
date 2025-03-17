@@ -163,16 +163,17 @@ namespace SIOP.Services.DockerRips
             HttpRequestMessage Request = new(HttpMethod.Post, fullUrl);
             HttpContent Content = new StringContent(param, Encoding.UTF8, "application/json");
             Request.Content = Content;
-
+            _httpclient.DefaultRequestHeaders.Clear();
             _httpclient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-            // HttpResponseMessage Response = await _httpclient.SendAsync(Request);
+            
 
-            HttpResponseMessage Response = await _httpclient.SendAsync(Request, HttpCompletionOption.ResponseHeadersRead);
-            _httpclient.DefaultRequestHeaders.ExpectContinue = false;
+            HttpResponseMessage Response = await _httpclient.SendAsync(Request);
+    
             var respuesta = await Response.Content.ReadAsStringAsync();
-            RespuestaConsultarCUVDTO Result = await Response.Content.ReadFromJsonAsync<RespuestaConsultarCUVDTO>();
+       
             if (Response.IsSuccessStatusCode)
             {
+                RespuestaConsultarCUVDTO Result = await Response.Content.ReadFromJsonAsync<RespuestaConsultarCUVDTO>();
                 Match match = Regex.Match(Result?.resultadosValidacion[0].observaciones!, pattern);
                 var newRespuestaConsultarCUVDTO = new RespuestaConsultarCUVDTO
                 {
@@ -200,7 +201,7 @@ namespace SIOP.Services.DockerRips
             }
             else
             {
-                throw new Exception(JsonConvert.SerializeObject(Result));
+                throw new Exception(JsonConvert.SerializeObject(respuesta));
             }
         }
 

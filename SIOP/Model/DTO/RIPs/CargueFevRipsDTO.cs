@@ -7,6 +7,14 @@ namespace SIOP.Model.DTO.DockerRips
         public RipsDTO? rips { get; set; }
         public string? xmlFevFile { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? codigoUnicoValidacion { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? einri { get; set; }
+    }
+
+    public class CargueCUVParam
+    {
+        public string? codigoUnicoValidacion { get; set; }
         public string? einri { get; set; }
     }
 

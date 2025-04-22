@@ -124,7 +124,7 @@ namespace SIOP.Services.DockerRips
             }
         }
 
-        public async Task<RespuestaConsultarCUVDTO> ConsultarCUV(CargueFevRipsDTO Json)
+        public async Task<RespuestaConsultarCUVDTO> ConsultarCUV(CargueCUVParam Json)
         {
             string fullUrl = $"{Config.GetValue<string>("EndPointDocker:Url")}api/ConsultasFevRips/ConsultarCUV",
                 base64Tipo = Config.GetValue<string>($"EndPointDocker:{Json.einri}:Tipo")!,
@@ -151,11 +151,11 @@ namespace SIOP.Services.DockerRips
                     clave = Clave,
                     nit = Nit
                 }
-                );
-            var NewJson = new CargueFevRipsDTO
+            );
+
+            var NewJson = new CargueCUVParam
             {
-                rips = Json.rips,
-                xmlFevFile = Json.xmlFevFile
+                codigoUnicoValidacion = Json.codigoUnicoValidacion
             };
 
             string param = JsonConvert.SerializeObject(NewJson, Formatting.Indented);

@@ -48,10 +48,9 @@ namespace SIOP.Controllers.EndPointDocker
         {
             try
             {
-                var paramCargueRips = new CargueFevRipsDTO
+                var paramCargueRips = new CargueCUVParam
                 {
-                    rips = Param.rips,
-                    xmlFevFile = Param.xmlFevFile,
+                    codigoUnicoValidacion = Param.codigoUnicoValidacion,
                     einri = Param.einri
                 };
                 return await _Services.ConsultarCUV(paramCargueRips);

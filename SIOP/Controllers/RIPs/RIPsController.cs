@@ -44,14 +44,13 @@ namespace SIOP.Controllers.EndPointDocker
         [HttpPost]
         [AllowAnonymous]
         [Route("ConsultarCUV")]
-        public async Task<ActionResult<RespuestaConsultarCUVDTO>> ConsultarCUV(CargueFevRipsDTO Param)
+        public async Task<ActionResult<RespuestaConsultarCUVDTO>> ConsultarCUV(CargueCUVParam Param)
         {
             try
             {
-                var paramCargueRips = new CargueFevRipsDTO
+                var paramCargueRips = new CargueCUVParam
                 {
-                    rips = Param.rips,
-                    xmlFevFile = Param.xmlFevFile,
+                    codigoUnicoValidacion = Param.codigoUnicoValidacion,
                     einri = Param.einri
                 };
                 return await _Services.ConsultarCUV(paramCargueRips);
@@ -63,15 +62,12 @@ namespace SIOP.Controllers.EndPointDocker
             }
         }
 
-
         [HttpGet]
         [AllowAnonymous]
         [Route("Version")]
         public async Task<ActionResult<string>> Version()
         {
-
-                return await _Services.Version();
-
+            return await _Services.Version();
         }
 
         [HttpPost("format")]
@@ -94,8 +90,5 @@ namespace SIOP.Controllers.EndPointDocker
                 return BadRequest($"JSON inválido: {ex.Message}");
             }
         }
-
-
-
     }
 }

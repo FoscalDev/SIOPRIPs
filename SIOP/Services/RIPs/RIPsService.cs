@@ -1,10 +1,12 @@
 ﻿using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Serilog;
 using SIOP.Model.DTO.DockerRips;
 using SIOP.Model.DTO.RIPs;
+using static SIOP.Model.DTO.DockerRips.RespuestaCargueFevRipsDTO;
 
 namespace SIOP.Services.DockerRips
 {
@@ -76,16 +78,17 @@ namespace SIOP.Services.DockerRips
                 {
                     persona =
                         {
-                            identificacion =
-                            {
-                                tipo = Tipo,
-                                numero = Numero,
-                            }
+                     identificacion =
+                     {
+                         tipo = Tipo,
+                         numero = Numero,
+                     }
                         },
                     clave = Clave,
                     nit = Nit
                 }
-                );
+            );
+
             var NewJson = new CargueFevRipsDTO
             {
                 rips = Json.rips,
@@ -101,7 +104,7 @@ namespace SIOP.Services.DockerRips
 
             _httpclient.DefaultRequestHeaders.Clear();
             _httpclient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-          
+
 
             // Envío de la solicitud
             HttpResponseMessage Response = await _httpclient.SendAsync(Request);
@@ -109,22 +112,67 @@ namespace SIOP.Services.DockerRips
             // Manejo de la respuesta
             if (Response.IsSuccessStatusCode)
             {
-            
                 var respuesta = await Response.Content.ReadFromJsonAsync<RespuestaCargueFevRipsDTO>();
-                return respuesta; ;
+                return respuesta!;
             }
             else
             {
-                string errorContent = await Response.Content.ReadAsStringAsync();
-                //throw new Exception($"Error en la solicitud: {Response.StatusCode}. Detalles: {errorContent}");
-                // throw new Exception(JsonConvert.SerializeObject(Result));
+                string json = await Response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
 
-                Log.Error($"Error respuesta apidocker envio de rips {errorContent}");
-                throw new Exception(errorContent);
+                var newResponse = new RespuestaCargueFevRipsDTO();
+
+                if (root.ValueKind == JsonValueKind.Object &&
+                    root.TryGetProperty("ResultadosValidacion", out var resultadosProp) &&
+                    resultadosProp.ValueKind == JsonValueKind.Array)
+                {
+                    newResponse = System.Text.Json.JsonSerializer.Deserialize<RespuestaCargueFevRipsDTO>(json);
+                }
+                else
+                {
+                    var errorDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, List<string>>>(json);
+                    List<ResultadoValidacion> Errors = new List<ResultadoValidacion>();
+
+                    foreach (var entry in errorDict!)
+                    {
+                        foreach (var error in entry.Value)
+                        {
+                            var splitError = error.Split('|');
+                            int countError = splitError.Length;
+                            var codigo = countError == 1 ? "NOCODIGO" : splitError[0].Trim();
+                            var descripcion = countError == 1 ? splitError[0].Trim() : splitError[1].Trim();
+                            var observaciones = countError == 1 ? splitError[0].Trim() : splitError[1].Trim();
+                            Errors.Add(new ResultadoValidacion
+                            {
+                                clase = "RECHAZADO",
+                                codigo = codigo,
+                                descripcion = descripcion,
+                                observaciones = observaciones,
+                                pathFuente = entry.Key,
+                                fuente = "Rips"
+                            });
+                        }
+                    }
+
+                    newResponse = new RespuestaCargueFevRipsDTO
+                    {
+                        resultState = false,
+                        procesoId = 0,
+                        numFactura = Json.rips.numFactura!, // Aquí deberías extraer del JSON si está disponible
+                        codigoUnicoValidacion = "",
+                        codigoUnicoValidacionToShow = "",
+                        fechaRadicacion = "", // Igual, extraer si es necesario
+                        rutaArchivos = "",
+                        resultadosValidacion = Errors
+                    };
+                }
+                //Log.Error($"Error respuesta apidocker envio de rips {newResponse}");
+                throw new Exception(JsonConvert.SerializeObject(newResponse));
             }
         }
 
-        public async Task<RespuestaConsultarCUVDTO> ConsultarCUV(CargueFevRipsDTO Json)
+        public async Task<RespuestaConsultarCUVDTO> ConsultarCUV(CargueCUVParam Json)
         {
             string fullUrl = $"{Config.GetValue<string>("EndPointDocker:Url")}api/ConsultasFevRips/ConsultarCUV",
                 base64Tipo = Config.GetValue<string>($"EndPointDocker:{Json.einri}:Tipo")!,
@@ -151,11 +199,11 @@ namespace SIOP.Services.DockerRips
                     clave = Clave,
                     nit = Nit
                 }
-                );
-            var NewJson = new CargueFevRipsDTO
+            );
+
+            var NewJson = new CargueCUVParam
             {
-                rips = Json.rips,
-                xmlFevFile = Json.xmlFevFile
+                codigoUnicoValidacion = Json.codigoUnicoValidacion
             };
 
             string param = JsonConvert.SerializeObject(NewJson, Formatting.Indented);
@@ -165,21 +213,20 @@ namespace SIOP.Services.DockerRips
             Request.Content = Content;
             _httpclient.DefaultRequestHeaders.Clear();
             _httpclient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-            
+
 
             HttpResponseMessage Response = await _httpclient.SendAsync(Request);
-    
+
             var respuesta = await Response.Content.ReadAsStringAsync();
-       
+
             if (Response.IsSuccessStatusCode)
             {
                 RespuestaConsultarCUVDTO Result = await Response.Content.ReadFromJsonAsync<RespuestaConsultarCUVDTO>();
-                Match match = Regex.Match(Result?.resultadosValidacion[0].observaciones!, pattern);
                 var newRespuestaConsultarCUVDTO = new RespuestaConsultarCUVDTO
                 {
                     procesoId = Result!.procesoId,
                     esValido = Result.esValido,
-                    codigoUnicoValidacion = match.Groups[1].Value,
+                    codigoUnicoValidacion = Result.codigoUnicoValidacion,
                     fechaValidacion = Result.fechaValidacion,
                     numDocumentoIdObligado = Result.numDocumentoIdObligado,
                     numeroDocumento = Result.numeroDocumento,
@@ -205,9 +252,7 @@ namespace SIOP.Services.DockerRips
             }
         }
 
-
         public async Task<string> Version() {
-
             try
             {
                 string fullUrl = $"{Config.GetValue<string>("EndPointDocker:Url")}api/TestApi/Index";
@@ -233,7 +278,5 @@ namespace SIOP.Services.DockerRips
      
 
         }
-
-    
     }
 }

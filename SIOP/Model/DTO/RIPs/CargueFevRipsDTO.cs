@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace SIOP.Model.DTO.DockerRips
 {
@@ -7,6 +8,12 @@ namespace SIOP.Model.DTO.DockerRips
         public RipsDTO? rips { get; set; }
         public string? xmlFevFile { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string? einri { get; set; }
+    }
+
+    public class CargueCUVParam
+    {
+        public string? codigoUnicoValidacion { get; set; }
         public string? einri { get; set; }
     }
 
@@ -203,22 +210,36 @@ namespace SIOP.Model.DTO.DockerRips
 
     public class RespuestaCargueFevRipsDTO
     {
+        [JsonPropertyName("ResultState")]
         public bool resultState { get; set; }
+        [JsonPropertyName("ProcesoId")]
         public int procesoId { get; set; }
+        [JsonPropertyName("NumFactura")]
         public string numFactura { get; set; }
+        [JsonPropertyName("CodigoUnicoValidacion")]
         public string codigoUnicoValidacion { get; set; }
+        [JsonPropertyName("CodigoUnicoValidacionToShow")]
         public string codigoUnicoValidacionToShow { get; set; }
+        [JsonPropertyName("FechaRadicacion")]
         public string fechaRadicacion { get; set; }
+        [JsonPropertyName("RutaArchivos")]
         public string rutaArchivos { get; set; }
+        [JsonPropertyName("ResultadosValidacion")]
         public List<ResultadoValidacion> resultadosValidacion { get; set; }
 
         public class ResultadoValidacion
         {
+            [JsonPropertyName("Clase")]
             public string clase { get; set; }
+            [JsonPropertyName("Codigo")]
             public string codigo { get; set; }
+            [JsonPropertyName("Descripcion")]
             public string descripcion { get; set; }
+            [JsonPropertyName("Observaciones")]
             public string observaciones { get; set; }
+            [JsonPropertyName("PathFuente")]
             public string pathFuente { get; set; }
+            [JsonPropertyName("Fuente")]
             public string fuente { get; set; }
         }
     }

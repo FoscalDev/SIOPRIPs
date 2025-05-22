@@ -19,11 +19,11 @@ namespace SIOP.Model.DTO.DockerRips
         public string? einri { get; set; }
     }
 
-    public class CargueCUVParam
-    {
-        public string? codigoUnicoValidacion { get; set; }
-        public string? einri { get; set; }
-    }
+    //public class CargueCUVParam
+    //{
+    //    public string? codigoUnicoValidacion { get; set; }
+    //    public string? einri { get; set; }
+    //}
 
     public class RipsDTO
     {
